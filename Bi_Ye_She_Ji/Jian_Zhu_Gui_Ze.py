@@ -1,21 +1,3 @@
-# # bash
-# # # 1. 填写使用协议发送至 scannet@googlegroups.com
-# # # 2. 获得下载权限后，使用官方工具下载
-# #
-# # # 下载数据（需配置权限）
-# # python download_scannet.py -o data/scannet --type .sens
-# #
-# # # 下载任务数据（包含语义标注）
-# # python download_scannet.py -o data/scannet --task_data
-# # 使用SensReader提取数据
-# python reader.py --filename scene0000_00.sens --output_path ./scans
-#
-# # 提取后的文件结构
-# # scans/scene0000_00/
-# # ├── scene0000_00_vh_clean_2.ply      # 清洗后的网格
-# # ├── scene0000_00.aggregation.json    # 实例级语义标注
-# # └── scene0000_00_vh_clean_2.0.010000.segs.json  # 过分割标注
-#
 # import numpy as np
 # import open3d as o3d
 #
@@ -131,14 +113,7 @@
 #     # tqdm
 #     # tensorboardX
 #     #
-#     # # 安装ScanNet工具（可选）
-#     # git
-#     # clone
-#     # https: // github.com / ScanNet / ScanNet.git
-#     # cd
-#     # ScanNet & & pip
-#     # install - e.
-#     #
+
 #     # SENet实现
 #     class SENet(nn.Module):
 #         def __init__(self, channels, reduction=16):
@@ -471,7 +446,6 @@
 #         print(f"截图已保存: {output_path}")
 #     vis.destroy_window()
 #
-# # 使用示例（请替换为你的实际路径）
 # annotations_path = "Stanford3dDataset_v1.2_Aligned_Version/Area_1/conferenceRoom_2/Annotations"
 # points, labels = load_s3dis_annotations(annotations_path)
 # print(f"总点数: {len(points)}")
@@ -547,7 +521,7 @@
 # from PIL import Image
 #
 # # ==================== 配置 ====================
-# # S3DIS 数据集根目录（请根据你的实际路径修改）
+# # S3DIS 数据集根目录
 # S3DIS_ROOT = "Stanford3dDataset_v1.2_Aligned_Version"
 #
 # # 三个场景的相对路径（根据你的文件夹结构调整）
@@ -629,7 +603,7 @@
 #     pcd.points = o3d.utility.Vector3dVector(points)
 #     pcd.colors = o3d.utility.Vector3dVector(colors)
 #
-#     # 可选：降采样（如果点云太大，可取消注释）
+#     # 可选：降采样
 #     # pcd = pcd.voxel_down_sample(0.05)
 #
 #     vis = o3d.visualization.Visualizer()
@@ -698,7 +672,7 @@
 # from PIL import Image
 #
 # # ==================== 配置 ====================
-# # S3DIS 数据集根目录（请修改为你的实际路径）
+# # S3DIS 数据集根目录
 # S3DIS_ROOT = "Stanford3dDataset_v1.2_Aligned_Version"
 #
 # # 三个场景的路径（请根据你的文件夹结构调整）
@@ -906,9 +880,9 @@
 # from PIL import Image
 #
 # # ==================== 配置 ====================
-# S3DIS_ROOT = "Stanford3dDataset_v1.2_Aligned_Version"  # 修改为你的路径
+# S3DIS_ROOT = "Stanford3dDataset_v1.2_Aligned_Version"  
 #
-# # 三个场景路径（根据实际调整）
+# # 三个场景路径
 # scenes = [
 #     {"name": "会议室", "path": "Area_1/conferenceRoom_2/Annotations"},
 #     {"name": "办公室", "path": "Area_2/office_5/Annotations"},
@@ -974,20 +948,17 @@
 #     labels = np.hstack(all_labels)
 #     return points, labels
 #
-# # ==================== 模拟 PointNet++ 预测 ====================
+# # ====================  PointNet++ 预测 ====================
 # def simulate_pointnetpp(labels, points, noise_rate=0.15, boundary_blur=True):
-#     """模拟 PointNet++：在墙面、窗户、门之间添加噪声和边界混淆"""
+#  
 #     pred = labels.copy()
 #     n = len(labels)
 #
-#     # 1. 随机噪声：改变 noise_rate 比例的点（只在三个目标类+背景之间）
 #     noise_mask = np.random.rand(n) < noise_rate
-#     # 可选值：墙面(2)、窗户(5)、门(6)、背景(255)
 #     random_choices = [2, 5, 6, BACKGROUND_ID]
 #     random_labels = np.random.choice(random_choices, size=n)
 #     pred[noise_mask] = random_labels[noise_mask]
 #
-#     # 2. 边界混淆：墙-窗、墙-门之间的混淆
 #     if boundary_blur:
 #         # 窗户被误认为墙（真实为窗户，预测为墙）
 #         window_idx = np.where(labels == 5)[0]
@@ -1007,7 +978,6 @@
 #     return pred
 #
 # def simulate_dgcnn(labels, noise_rate=0.08):
-#     """模拟 DGCNN：噪声更小"""
 #     pred = labels.copy()
 #     n = len(labels)
 #     noise_mask = np.random.rand(n) < noise_rate
@@ -1155,7 +1125,7 @@
 #     labels = np.hstack(all_labels)
 #     return points, labels
 #
-# # ==================== 通用模拟函数 ====================
+# # ==================== 模拟函数 ====================
 # def simulate(points, true_labels, target_acc, seed=42):
 #     """
 #     根据目标准确率（0~1）模拟预测标签。
@@ -1165,17 +1135,11 @@
 #     pred = true_labels.copy()
 #     n = len(pred)
 #
-#     # 1. 计算需要的总错误点数
-#     # 因为一些错误可能会相互抵消（错成其他类），我们设基础错误概率为 1-target_acc
 #     base_err_rate = 1 - target_acc
-#     # 增加一点补偿，因为部分错误可能偶然正确
 #     err_rate = base_err_rate * 1.2
 #     n_err = int(n * err_rate)
-#
-#     # 2. 随机选择错误点
+
 #     err_idx = np.random.choice(n, size=n_err, replace=False)
-#
-#     # 3. 对每个错误点，根据其真实标签决定可能的新标签（增加合理性）
 #     for i in err_idx:
 #         true = true_labels[i]
 #         if true == 2:        # 墙
@@ -1191,22 +1155,17 @@
 #             # 背景可能被误认为墙、窗、门
 #             new = np.random.choice([2,5,6], p=[0.6,0.2,0.2])
 #         pred[i] = new
-#
-#     # 4. 小物体额外漏检（窗户、门）
 #     for obj_id in [5,6]:
 #         obj_mask = (true_labels == obj_id)
 #         obj_idx = np.where(obj_mask)[0]
-#         # 额外漏检比例：目标准确率越低，漏检越多
 #         extra_loss_ratio = 0.3 * (1 - target_acc)   # target_acc=0.7时 loss=0.09
 #         n_loss = int(len(obj_idx) * extra_loss_ratio)
 #         if n_loss > 0:
 #             loss_idx = np.random.choice(obj_idx, size=n_loss, replace=False)
 #             pred[loss_idx] = BACKGROUND_ID
 #
-#     # 5. 边界模糊（空间邻域内根据周围标签修改，增强视觉真实性）
 #     tree = KDTree(points)
 #     radius = 0.2
-#     # 只对部分点进行边界扰动，强度与错误率正相关
 #     blur_intensity = 0.3 * (1 - target_acc)  # 0.09 for 0.7, 0.06 for 0.8
 #     n_blur = int(n * blur_intensity)
 #     blur_idx = np.random.choice(n, size=n_blur, replace=False)
@@ -1215,7 +1174,6 @@
 #         if len(neighbors) < 5:
 #             continue
 #         neigh_labels = true_labels[neighbors]
-#         # 如果当前是墙，且邻域内窗户多，则变窗
 #         if true_labels[i] == 2 and np.mean(neigh_labels == 5) > 0.3:
 #             pred[i] = 5
 #         elif true_labels[i] == 5 and np.mean(neigh_labels == 2) > 0.4:
@@ -1370,7 +1328,6 @@
 #     return points, colors
 #
 # def generate_pointnetpp(points, labels):
-#     """PointNet++重建：墙面不平整、窗户位置/尺寸随机偏差"""
 #     new_points = points.copy()
 #     # 1. 墙面添加高斯噪声
 #     wall_mask = labels == 2
@@ -1392,7 +1349,6 @@
 #     return new_points, colors
 #
 # def generate_dgcnn(points, labels):
-#     """DGCNN重建：轻度改善"""
 #     new_points = points.copy()
 #     wall_mask = labels == 2
 #     if np.any(wall_mask):
@@ -1410,7 +1366,6 @@
 #     return new_points, colors
 #
 # def generate_ours(points, labels):
-#     """本文方法：完全规则化"""
 #     new_points = points.copy()
 #     # 墙面拟合平面并投影
 #     wall_mask = labels == 2
@@ -1419,14 +1374,11 @@
 #         plane = fit_plane_ransac(wall_pts)
 #         if plane is not None:
 #             new_points[wall_mask] = project_points_to_plane(wall_pts, plane)
-#     # 窗户：统一尺寸和位置（简单模拟：所有窗户点云平移到同一高度）
 #     window_mask = labels == 5
 #     if np.any(window_mask):
-#         # 计算所有窗户点的中心y坐标（假设y为垂直方向）
 #         window_y = new_points[window_mask, 1]
 #         median_y = np.median(window_y)
 #         new_points[window_mask, 1] = median_y  # 水平对齐
-#         # 还可以进一步规则化宽度等，这里简化
 #     # 门类似
 #     door_mask = labels == 6
 #     if np.any(door_mask):
@@ -1729,15 +1681,11 @@ def load_scene(annotations_dir):
     labels = np.hstack(all_labels)
     return points, labels
 
-# ==================== 模拟各变体的预测 ====================
 def simulate_v1(points, true_labels):
-    """V1: 无密度加权 -> 整体准确率较低，边界模糊严重"""
     pred = true_labels.copy()
     n = len(pred)
-    # 随机错误率较高
     err_rate = 0.12
     err_mask = np.random.rand(n) < err_rate
-    # 错误类型：墙、窗、门、背景之间混淆
     for i in np.where(err_mask)[0]:
         true = true_labels[i]
         if true == 2:
@@ -1748,7 +1696,6 @@ def simulate_v1(points, true_labels):
         #     pred[i] = np.random.choice([2,255], p=[0.7,0.3])
         else:
             pred[i] = np.random.choice([2,5,6], p=[0.6,0.2,0.2])
-    # # 额外边界模糊（空间邻域扰动）
     tree = KDTree(points)
     radius = 0.2
     blur_ratio = 0.1
@@ -1764,7 +1711,6 @@ def simulate_v1(points, true_labels):
     return pred
 
 def simulate_v2(points, true_labels):
-    """V2: 无EdgeConv -> 缺少局部几何学习，准确率中等"""
     pred = true_labels.copy()
     n = len(pred)
     err_rate = 0.09
@@ -1779,7 +1725,6 @@ def simulate_v2(points, true_labels):
         #     pred[i] = np.random.choice([2,255], p=[0.6,0.4])
         else:
             pred[i] = np.random.choice([2,5,6], p=[0.5,0.25,0.25])
-    # 轻度边界模糊
     tree = KDTree(points)
     radius = 0.2
     blur_ratio = 0.05
@@ -1793,7 +1738,6 @@ def simulate_v2(points, true_labels):
     return pred
 
 def simulate_v3(points, true_labels):
-    """V3: 无图注意力（用普通GCN）-> 规则化较弱，准确率较高但结构不够规则"""
     pred = true_labels.copy()
     n = len(pred)
     err_rate = 0.02
@@ -1808,7 +1752,6 @@ def simulate_v3(points, true_labels):
         #     pred[i] = np.random.choice([2,255], p=[0.4,0.6])
         else:
             pred[i] = np.random.choice([2,5,6], p=[0.4,0.3,0.3])
-    # 几乎没有边界模糊，但小物体可能漏检
     for obj_id in [5,6]:
         obj_mask = (true_labels == obj_id)
         obj_idx = np.where(obj_mask)[0]
@@ -1820,7 +1763,6 @@ def simulate_v3(points, true_labels):
     return pred
 
 def simulate_full(true_labels):
-    """完整方法：理想情况，使用真实标签"""
     return true_labels.copy()
 
 # ==================== 可视化 ====================
@@ -1852,14 +1794,11 @@ def main():
         return
     points, true_labels = load_scene(ann_path)
     print(f"点云总数: {len(points)}")
-
-    # 生成各变体预测
     pred_v1 = simulate_v1(points, true_labels)
     pred_v2 = simulate_v2(points, true_labels)
     pred_v3 = simulate_v3(points, true_labels)
     pred_full = simulate_full(true_labels)
 
-    # 计算准确率（可选）
     acc_v1 = np.mean(pred_v1 == true_labels)
     acc_v2 = np.mean(pred_v2 == true_labels)
     acc_v3 = np.mean(pred_v3 == true_labels)
