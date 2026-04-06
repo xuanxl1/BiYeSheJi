@@ -1,2 +1,3 @@
 # BiYeSheJi
-LiXuanXuan的毕业设计哈哈哈哈
+LiXuanXuan的毕业设计
+data在其它readme里
