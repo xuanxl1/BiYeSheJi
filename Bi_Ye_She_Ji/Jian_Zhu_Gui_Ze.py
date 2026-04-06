@@ -15,34 +15,38 @@
 # # ├── scene0000_00_vh_clean_2.ply      # 清洗后的网格
 # # ├── scene0000_00.aggregation.json    # 实例级语义标注
 # # └── scene0000_00_vh_clean_2.0.010000.segs.json  # 过分割标注
-#
-# import numpy as np
-# import open3d as o3d
-#
-#
-# def extract_point_cloud_from_mesh(mesh_path, num_points=8192):
-#     """从PLY网格提取点云"""
-#     mesh = o3d.io.read_triangle_mesh(mesh_path)
-#     # 从网格顶点采样
-#     vertices = np.asarray(mesh.vertices)
-#     colors = np.asarray(mesh.vertex_colors) if mesh.has_vertex_colors() else None
-#
-#     # 最远点采样
-#     if len(vertices) > num_points:
-#         indices = farthest_point_sample(vertices, num_points)
-#         vertices = vertices[indices]
-#         if colors is not None:
-#             colors = colors[indices]
-#
-#     # 坐标归一化
-#     centroid = np.mean(vertices, axis=0)
-#     vertices = vertices - centroid
-#     max_dist = np.max(np.sqrt(np.sum(vertices ** 2, axis=1)))
-#     vertices = vertices / max_dist
-#
-#     return vertices, colors
-#
-#
+
+import numpy as np
+import open3d as o3d
+
+
+def farthest_point_sample(vertices, num_points):
+    pass
+
+
+def extract_point_cloud_from_mesh(mesh_path, num_points=8192):
+    """从PLY网格提取点云"""
+    mesh = o3d.io.read_triangle_mesh(mesh_path)
+    # 从网格顶点采样
+    vertices = np.asarray(mesh.vertices)
+    colors = np.asarray(mesh.vertex_colors) if mesh.has_vertex_colors() else None
+
+    # 最远点采样
+    if len(vertices) > num_points:
+        indices = farthest_point_sample(vertices, num_points)
+        vertices = vertices[indices]
+        if colors is not None:
+            colors = colors[indices]
+
+    # 坐标归一化
+    centroid = np.mean(vertices, axis=0)
+    vertices = vertices - centroid
+    max_dist = np.max(np.sqrt(np.sum(vertices ** 2, axis=1)))
+    vertices = vertices / max_dist
+
+    return vertices, colors
+
+
 # def load_semantic_labels(scene_path, vertices):
 #     """加载语义标签"""
 #     import json
@@ -63,99 +67,57 @@
 #
 #     return labels
 #
-#
-# class PointCloudAugmentation:
-#     def __init__(self, rotation_range=15, scale_range=(0.8, 1.2), noise_std=0.01):
-#         self.rotation_range = rotation_range
-#         self.scale_range = scale_range
-#         self.noise_std = noise_std
-#
-#     def __call__(self, points, labels):
-#         # 随机旋转（绕Y轴）
-#         if np.random.random() > 0.5:
-#             angle = np.random.uniform(-self.rotation_range, self.rotation_range) * np.pi / 180
-#             rot_mat = np.array([[np.cos(angle), 0, np.sin(angle)],
-#                                 [0, 1, 0],
-#                                 [-np.sin(angle), 0, np.cos(angle)]])
-#             points = points @ rot_mat.T
-#
-#         # 随机缩放
-#         scale = np.random.uniform(*self.scale_range)
-#         points = points * scale
-#
-#         # 随机噪声
-#         points += np.random.normal(0, self.noise_std, points.shape)
-#
-#         # 随机丢弃（模拟遮挡）
-#         if np.random.random() > 0.7:
-#             keep_ratio = np.random.uniform(0.8, 0.95)
-#             n = len(points)
-#             keep_idx = np.random.choice(n, int(n * keep_ratio), replace=False)
-#             points = points[keep_idx]
-#             labels = labels[keep_idx]
-#
-#         return points, labels
-#
-#     # bash
-#     # # 创建conda环境
-#     # conda
-#     # create - n
-#     # pointconv_scannet
-#     # python = 3.8
-#     # conda
-#     # activate
-#     # pointconv_scannet
-#     #
-#     # # 安装PyTorch
-#     # pip
-#     # install
-#     # torch == 1.12
-#     # .1 + cu113
-#     # torchvision == 0.13
-#     # .1 + cu113 - -extra - index - url
-#     # https: // download.pytorch.org / whl / cu113
-#     #
-#     # # 安装点云处理库
-#     # pip
-#     # install
-#     # open3d
-#     # numpy
-#     # scipy
-#     # scikit - learn
-#     #
-#     # # 安装可视化库
-#     # pip
-#     # install
-#     # matplotlib
-#     # seaborn
-#     # tqdm
-#     # tensorboardX
-#     #
-#     # # 安装ScanNet工具（可选）
-#     # git
-#     # clone
-#     # https: // github.com / ScanNet / ScanNet.git
-#     # cd
-#     # ScanNet & & pip
-#     # install - e.
-#     #
-#     # SENet实现
-#     class SENet(nn.Module):
-#         def __init__(self, channels, reduction=16):
-#             super().__init__()
-#             self.fc = nn.Sequential(
-#                 nn.Linear(channels, channels // reduction, bias=False),
-#                 nn.ReLU(inplace=True),
-#                 nn.Linear(channels // reduction, channels, bias=False),
-#                 nn.Sigmoid()
-#             )
-#
-#         def forward(self, x):
-#             # x: (B, C, N)
-#             b, c, n = x.size()
-#             y = x.mean(dim=-1)  # 全局平均池化 (B, C)
-#             y = self.fc(y).view(b, c, 1)  # (B, C, 1)
-#             return x * y.expand_as(x)
+
+class PointCloudAugmentation:
+    def __init__(self, rotation_range=15, scale_range=(0.8, 1.2), noise_std=0.01):
+        self.rotation_range = rotation_range
+        self.scale_range = scale_range
+        self.noise_std = noise_std
+
+    def __call__(self, points, labels):
+        # 随机旋转（绕Y轴）
+        if np.random.random() > 0.5:
+            angle = np.random.uniform(-self.rotation_range, self.rotation_range) * np.pi / 180
+            rot_mat = np.array([[np.cos(angle), 0, np.sin(angle)],
+                                [0, 1, 0],
+                                [-np.sin(angle), 0, np.cos(angle)]])
+            points = points @ rot_mat.T
+
+        # 随机缩放
+        scale = np.random.uniform(*self.scale_range)
+        points = points * scale
+
+        # 随机噪声
+        points += np.random.normal(0, self.noise_std, points.shape)
+
+        # 随机丢弃（模拟遮挡）
+        if np.random.random() > 0.7:
+            keep_ratio = np.random.uniform(0.8, 0.95)
+            n = len(points)
+            keep_idx = np.random.choice(n, int(n * keep_ratio), replace=False)
+            points = points[keep_idx]
+            labels = labels[keep_idx]
+
+        return points, labels
+
+
+    # SENet实现
+    class SENet(nn.Module):
+        def __init__(self, channels, reduction=16):
+            super().__init__()
+            self.fc = nn.Sequential(
+                nn.Linear(channels, channels // reduction, bias=False),
+                nn.ReLU(inplace=True),
+                nn.Linear(channels // reduction, channels, bias=False),
+                nn.Sigmoid()
+            )
+
+        def forward(self, x):
+            # x: (B, C, N)
+            b, c, n = x.size()
+            y = x.mean(dim=-1)  # 全局平均池化 (B, C)
+            y = self.fc(y).view(b, c, 1)  # (B, C, 1)
+            return x * y.expand_as(x)
 
 # # import matplotlib.pyplot as plt
 # import matplotlib
