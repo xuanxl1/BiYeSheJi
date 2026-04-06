@@ -1,0 +1,13 @@
+yolov5/
+Bi_Ye_She_Ji/Stanford3dDataset_v1.2_Aligned_Version/
+runs/
+unet-master/
+yolov8_n_syncbn_fast_8xb16-500e_coco_20230114_131804-88c11cdb.pth
+yolo11n.pt
+val.py
+train.py
+predict.py
+Mohu.py
+__init__.py
+Bi_Ye_She_Ji/data/modelnet40_test_8192pts_fps.dat
+Bi_Ye_She_Ji/data/modelnet40_train_8192pts_fps.dat
